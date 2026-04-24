@@ -45,8 +45,8 @@ class VerLibrosView(View):
         for col in range(num_cols):
             libros_grid.grid_columnconfigure(col, weight=1, uniform="col")
             
-        
-        for i, libro in enumerate(self.biblioteca.libros):
+        #Vista limitada a 20 libros
+        for i, libro in enumerate(self.biblioteca.libros[:20]):
             libro_frame = ctk.CTkFrame(libros_grid, fg_color='#333333')
             pady = (10, 10) if i // num_cols == 0 else (0, 10)
             libro_frame.grid(row=i // num_cols, column=i % num_cols, sticky="nsew", pady=pady, padx=5)
@@ -54,6 +54,7 @@ class VerLibrosView(View):
             ctk.CTkLabel(libro_frame, image=self.libro_icono, text='').pack()
             ctk.CTkLabel(libro_frame, text=f"Autor: {libro.autor}", font=fuentes["preview_autor_font"], wraplength=max_width - 10, justify='left').pack()
             self.detectar_hover(libro_frame, libro)
+            
             
     def detectar_hover(self, frame: ctk.CTkBaseClass, libro: Libro):
         for widget in [frame] + frame.winfo_children():

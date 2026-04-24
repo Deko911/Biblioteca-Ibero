@@ -1,11 +1,11 @@
 from db.db import cursor
-from lib.biblioteca import Libro, LibroInput
+from lib.tipos import Libro, LibroInput
 
 class LibroModel:
     
     @staticmethod
     def obtener_libros() -> list[Libro] | None:
-        sql = "SELECT * FROM Libro"
+        sql = "SELECT * FROM Libro ORDER BY nombre ASC"
         libros = []
         try:
             cursor.execute(sql)
@@ -28,13 +28,18 @@ class LibroModel:
             return None
         
     @staticmethod
-    def crear_libro(libro: LibroInput) -> bool:
+    def crear_libro(libro: LibroInput) -> Libro | None:
         sql = "INSERT INTO Libro (nombre, autor, anio, descripcion, libre) VALUES (?, ?, ?, ?, TRUE)"
         try:
             cursor.execute(sql, (libro.nombre, libro.autor, libro.año, libro.descripcion))
         except:
-            return False
-        return True
+            return None
+        
+        id = cursor.lastrowid
+        if id is None:
+            return None
+        
+        return Libro(id, libro.nombre, libro.autor, libro.año, libro.descripcion, True)
     
     @staticmethod
     def editar_libro(libro: Libro) -> bool:

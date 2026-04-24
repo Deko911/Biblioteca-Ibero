@@ -72,6 +72,9 @@ class RegistroView(View):
         usuarioInput = UsuarioInput(nombre, contraseña1)
         
         usuario = self.biblioteca.registrar_usuario(usuarioInput)
+        if usuario is None:
+            enviar_popup(self.app, f"Usuario '{nombre}' ya existe.")
+            return
         self.app.usuario = usuario
         
         enviar_popup(self.app, f"Usuario '{nombre}' creado exitosamente.", False)

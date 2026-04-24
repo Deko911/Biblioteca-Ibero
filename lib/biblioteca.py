@@ -1,56 +1,15 @@
-
-class Libro:
-    def __init__(self, id: int, nombre: str, autor: str, año: int, descripcion: str, libre: bool):
-        self.id = id
-        self.nombre = nombre
-        self.autor = autor
-        self.año = año
-        self.descripcion = descripcion
-        self.libre = libre
-        
-    def __str__(self) -> str:
-        estado = "Disponible" if self.libre else "Prestado"
-        return f"Id: {self.id} - Nombre: {self.nombre} - Autor: {self.autor} - Año: {self.año} - Estado: {estado}"
-    
-    def actualizar_libro(self, input: LibroInput):
-        self.nombre = input.nombre
-        self.autor = input.autor
-        self.año = input.año
-        self.descripcion = input.descripcion
-        
-class LibroInput:
-    def __init__(self, nombre: str, autor: str, año: int, descripcion: str):
-        self.nombre = nombre
-        self.autor = autor
-        self.año = año
-        self.descripcion = descripcion
-        
-class Usuario:
-    def __init__(self, id: int, nombre: str, contraseña: str):
-        self.id = id
-        self.nombre = nombre
-        self._contraseña = contraseña
-        self.prestamos: dict[int, Libro] = {}
-        
-class UsuarioInput:
-    def __init__(self, nombre: str, contraseña: str):
-        self.nombre = nombre
-        self._contraseña = contraseña
-        self.prestamos: dict[int, Libro] = {}
-        
-class UsuarioSeguro:
-    def __init__(self, usuario: Usuario):
-        self.id = usuario.id
-        self.nombre = usuario.nombre
-        self.prestamos = usuario.prestamos
+from models.usuarios import UsuarioModel
+from models.libros import LibroModel
+from models.prestamos import PrestamoModel
+from lib.tipos import *
 
 class Biblioteca:
     def __init__(self):
         self._libros: list[Libro] = []
         self._libros_id: dict[int, Libro] = {}
         self._usuarios: dict[int, Usuario] = {}
-        self._contador = 0
-        self._contador_usuario = 0
+        
+        self.cargar_bd()
         
     @property
     def usuarios(self): 
@@ -60,10 +19,31 @@ class Biblioteca:
     @property
     def libros(self):
         return self._libros
+    
+    def cargar_bd(self):
+        usuarios = UsuarioModel.obtener_usuarios()
+        libros = LibroModel.obtener_libros()
+        prestamos = PrestamoModel.obtener_prestamos()
+        
+        if (usuarios == None or libros == None or prestamos == None):
+            raise Exception("Error al cargar la informacion de la base de datos")
+        
+        for usuario in usuarios:
+            self._usuarios[usuario.id] = usuario
+            
+        for libro in libros:
+            self._libros.append(libro)
+            self._libros_id[libro.id] = libro
+            
+        for (usuario_id, libro_id) in prestamos:
+            libro = self._libros_id[libro_id]
+            libro.libre = False
+            self._usuarios[usuario_id].prestamos[libro_id] = libro
         
     def crear_libro(self, input: LibroInput):
-        libro = Libro(self._contador, input.nombre, input.autor, input.año, input.descripcion, True)
-        self._contador += 1
+        libro = LibroModel.crear_libro(input)
+        if libro is None:
+            raise Exception("Error al guardar libros en la base de datos")
         return libro
         
     def agregar_libro(self, libro: LibroInput):
@@ -77,6 +57,7 @@ class Biblioteca:
     def editar_libro(self, nuevo_libro: LibroInput, id=0):
         libro = self.obtener_libro(id)
         libro.actualizar_libro(nuevo_libro)
+        LibroModel.editar_libro(libro)
         return libro
     
     def eliminar_libro(self, id=-1):
@@ -84,43 +65,45 @@ class Biblioteca:
         ids = [libro.id for libro in self._libros]
         idx = ids.index(id)
         libro = self._libros.pop(idx)
+        if not LibroModel.eliminar_libro(libro.id):
+            raise Exception("Error al eliminar libros de la base de datos")
+        
         return self._libros_id.pop(libro.id)
     
     def registrar_usuario(self, input: UsuarioInput):
-        usuario = Usuario(self._contador_usuario, input.nombre, input._contraseña)
-        self._usuarios[self._contador_usuario] = usuario
-        self._contador_usuario += 1
+        usuario = UsuarioModel.crear_usuario(input)
+        if usuario is None:
+            return None
+        self._usuarios[usuario.id] = usuario
+        
         return usuario
         
     def ingresar_usuario(self, nombre: str, contraseña: str):
-        usuario = None
-        for u in self._usuarios.values():
-            if u.nombre == nombre:
-                usuario = u
-                
+        usuario = UsuarioModel.obtener_usuario_por_nombre(nombre)
+
         if usuario == None:
             return None
         
         if usuario._contraseña != contraseña:
             return None
         
+        usuario = self._usuarios[usuario.id]
         return usuario
     
     def prestar_libro(self, libro_id: int, usuario: Usuario):
         libro = self.obtener_libro(libro_id)
         if not libro.libre: return False
         
-        libro.libre = False
-        usuario.prestamos[libro.id] = libro
-        
+        if PrestamoModel.prestar_libro(usuario, libro) is None:
+            raise Exception("Error al guardar prestamos de la base de datos")
         return True
     
     def devolver_libro(self, libro_id: int, usuario: Usuario):
         libro = self.buscar_prestamo(usuario, libro_id)
         if libro is None: return False
         
-        libro.libre = True
-        usuario.prestamos.pop(libro.id)
+        if not PrestamoModel.devolver_libro(usuario, libro):
+            raise Exception("Error al eliminar prestamos de la base de datos")
         
         return True
     

@@ -26,6 +26,7 @@ class EditarLibroView(View):
         
     def generar_ui(self):
         if not self.frame is None: self.frame.destroy()
+        if self.libro is None: return
         
         self.frame = ctk.CTkFrame(self, fg_color='transparent')
         self.frame.pack(fill='both', expand=True)
@@ -81,6 +82,8 @@ class EditarLibroView(View):
         self.ingresar_formulario()
         
     def ingresar_formulario(self):
+        if self.libro is None:
+            return
         if not self.nombre_input or not self.autor_input or not self.año_input or not self.descripcion_input:
             raise Exception("campos de entrada no inicializados.")
         
@@ -113,10 +116,7 @@ class EditarLibroView(View):
 
         self.libro = self.biblioteca.editar_libro(libro_input, self.libro.id)
         enviar_popup(self.app, "Libro modificado exitosamente", False)
-         
-        self.nombre_input.focus()
         
-        self.app.actualizar_frames()
         self.app.pantalla_principal()
         
     def editar_libro(self, libro: Libro):

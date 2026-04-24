@@ -1,5 +1,5 @@
 from db.db import cursor
-from lib.biblioteca import Usuario, UsuarioInput
+from lib.tipos import Usuario, UsuarioInput
 
 class UsuarioModel:
 
@@ -31,11 +31,15 @@ class UsuarioModel:
             return None
     
     @staticmethod
-    def crear_usuario(usuario: UsuarioInput) -> bool:
+    def crear_usuario(usuario: UsuarioInput) -> Usuario | None:
         sql = "INSERT INTO Usuario (nombre, contrasena) VALUES (?, ?)"
         try:
             cursor.execute(sql, (usuario.nombre, usuario._contraseña))
         except:
-            return False
-       
-        return True
+            return None
+        
+        id = cursor.lastrowid
+        if id is None:
+            return None
+        
+        return Usuario(id, usuario.nombre, usuario._contraseña)
