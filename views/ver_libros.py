@@ -104,6 +104,7 @@ class VerLibrosView(View):
     def actualizar_frame(self):
         self.actualizar_resultados()
         num_cols =  max(1, self.app.width // 400)
+        max_width = (self.app.width - 400) // num_cols
         if not num_cols == self.columnas:
             self.columnas = num_cols
             self.generar_ui()
@@ -126,7 +127,7 @@ class VerLibrosView(View):
                 libro_card.cambiar_visibilidad(False)
             else: 
                 libro = self.resultados[i]
-                libro_card.actualizar(libro)
+                libro_card.actualizar(libro, wraplength=max_width - 10)
                 libro_card.cambiar_visibilidad(True)
                 self.detectar_hover(libro_card, libro)
         
