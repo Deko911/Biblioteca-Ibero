@@ -12,9 +12,12 @@ Este proyecto es una aplicación de gestión de biblioteca desarrollada como par
 ## Características Principales
 - Registro y autenticación de usuarios.
 - Visualización, creación, edición y eliminación de libros.
-- Gestión de usuarios y libros mediante arreglos.
-- Interfaz gráfica para interacción amigable.
-- Datos de prueba incluidos para usuarios y libros.
+- Gestión de usuarios mediante base de datos SQLite.
+- Gestión de libros mediante un árbol optimizado para búsquedas por nombre.
+- Gestión de usuarios mediante base de datos SQLite.
+- Gestión de préstamos y devoluciones de libros.
+- Interfaz gráfica moderna y amigable (CustomTkinter).
+- Script de inicialización de base de datos y datos de prueba (`seeder.py`).
 
 ## Estructura de Archivos
 
@@ -56,7 +59,14 @@ Este proyecto es una aplicación de gestión de biblioteca desarrollada como par
    ```bash
    pip install -r requirements.txt
    ```
-4. **Ejecutar la aplicación**
+
+4. **Inicializar la base de datos y cargar datos de prueba**
+   ```bash
+   python seeder.py
+   ```
+   Esto creará las tablas necesarias y cargará usuarios y libros de ejemplo.
+
+5. **Ejecutar la aplicación**
    ```bash
    python main.py
    ```
@@ -70,18 +80,23 @@ Este proyecto es una aplicación de gestión de biblioteca desarrollada como par
 - **Juan** / **juan123**
 
 ### Libros de Prueba
+Algunos de los libros precargados:
 - "Cien años de soledad" - Gabriel García Márquez
-- "El coronel no tiene quien le escriba" - Gabriel García Márquez
-- "Hamlet" - Shakespeare
-- "Metamorfosis" - Franz Kafka
+- "Don Quijote de la Mancha" - Miguel de Cervantes
+- "Orgullo y prejuicio" - Jane Austen
 - "Moby Dick" - Herman Melville
-- "El principito" - Antoine de Saint-Exupéry
+- "Crimen y castigo" - Fiódor Dostoyevski
+- "1984" - George Orwell
+- "El Hobbit" - J.R.R. Tolkien
+- "El señor de los anillos" - J.R.R. Tolkien
+- "Harry Potter y la piedra filosofal" - J.K. Rowling
+- ...y muchos más
 
 Estos usuarios y libros están precargados para facilitar las pruebas y la exploración de la aplicación.
 
 ## Notas Técnicas
-- El proyecto utiliza **arreglos** como estructura de datos principal para almacenar y gestionar la información de usuarios y libros.
-- No se utiliza una base de datos externa; toda la información se mantiene en memoria durante la ejecución.
+- El proyecto utiliza una estructura de **árbol** para almacenar y buscar libros de forma eficiente por nombre, y una base de datos SQLite local (`db/db.sqlite`) para gestionar la información de usuarios, libros y préstamos.
+- El script `seeder.py` permite reiniciar la base de datos y cargar datos de prueba fácilmente.
 - El código está organizado en módulos para separar la lógica, la configuración y las vistas.
 
 ## Licencia
